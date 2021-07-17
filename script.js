@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const audioCtx = new AudioContext({sampleRate: 48000});
 const image = document.getElementById('source');
 var continuePlay = false;
+var bouncy = false;
 
 const cursor = {
     w: 60,
@@ -50,18 +51,34 @@ function newPos() {
 }
 
 function detectWalls() {
+    let bounceX = false;
+    let bounceY = false;
+
     if (cursor.x < 0) {
         cursor.x = 0;
+        bounceX = true;
     } 
     else if (cursor.x + cursor.w > canvas.width) {
         cursor.x = canvas.width - cursor.w;
+        bounceX = true;
     }
 
     if (cursor.y < 0) {
         cursor.y = 0;
+        bounceY = true;
     }
     else if (cursor.y + cursor.h > canvas.height) {
         cursor.y = canvas.height - cursor.h;
+        bounceY = true;
+    }
+
+    if (bouncy) {
+        if (bounceX) {
+            cursor.dx *= -1;
+        }
+        else if (bounceY) {
+            cursor.dy *= -1;
+        }
     }
 }
 
@@ -89,17 +106,22 @@ function updateBeatParams() {
 }
 
 function keyDown(e) {
-    if (e.key == "ArrowRight" || e.key == "Right") {
-        cursor.dx = cursor.speed;
-    }
-    else if (e.key == "ArrowLeft" || e.key == "Left") {
-        cursor.dx = cursor.speed * -1;
-    }
-    else if (e.key == "ArrowUp" || e.key == "Up") {
-        cursor.dy = cursor.speed * -1;
-    }
-    else if (e.key == "ArrowDown" || e.key == "Down") {
-        cursor.dy = cursor.speed;
+    if (!bouncy) {
+        if (e.key == "ArrowRight" || e.key == "Right") {
+            cursor.dx = cursor.speed;
+        }
+        else if (e.key == "ArrowLeft" || e.key == "Left") {
+            cursor.dx = cursor.speed * -1;
+        }
+        else if (e.key == "ArrowUp" || e.key == "Up") {
+            cursor.dy = cursor.speed * -1;
+        }
+        else if (e.key == "ArrowDown" || e.key == "Down") {
+            cursor.dy = cursor.speed;
+        }
+    } 
+    else {
+        stopBouncy();
     }
 }
 
@@ -229,9 +251,29 @@ stopButton.id = 'stop';
 stopButton.addEventListener('click', () => {
     silenceAll();
     continuePlay = false;
-    
+
+    if (bouncy) {
+        stopBouncy();
+    }
 })
 document.body.appendChild(stopButton);
+
+// Bouncy button
+const bouncyButton = document.createElement('button');
+bouncyButton.innerText = "Bouncy";
+bouncyButton.id = 'stop';
+bouncyButton.addEventListener('click', () => {
+    bouncy = true;
+    cursor.dx = 8;
+    cursor.dy = 5;
+})
+document.body.appendChild(bouncyButton);
+
+function stopBouncy() {
+    cursor.dx = 0;
+    cursor.dy = 0;
+    bouncy = false;
+}
 
 function silenceAll() {
     hatsVals.gain = 0.0;
