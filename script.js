@@ -95,7 +95,7 @@ function updateBeatParams() {
     let yNormedVal = cursor.y / (canvas.height - cursor.h);
 
     kickVals.decay = (xNormedVal * 5) + 0.5;
-    kickVals.pitch = ((1 - yNormedVal) * 350) + 100;
+    kickVals.pitch = ((1 - yNormedVal) * 350) + 150;
 
     snareVals.decay = (xNormedVal * 0.75) + 0.5;
     snareVals.cutoff = ((1 - yNormedVal) * 12000) + 1500;
@@ -159,7 +159,7 @@ function playSnare() {
 
     // Snare osc gain control
     const snareOscGainControl = audioCtx.createGain();
-    snareOscGainControl.gain.setValueAtTime(snareVals.gain, audioCtx.currentTime);
+    snareOscGainControl.gain.setValueAtTime(snareVals.gain + 0.2, audioCtx.currentTime);
     snareOscGainControl.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
     snareOscGainControl.connect(gainControl)
     snareOsc.connect(snareOscGainControl);
@@ -263,11 +263,22 @@ const bouncyButton = document.createElement('button');
 bouncyButton.innerText = "Bouncy";
 bouncyButton.id = 'stop';
 bouncyButton.addEventListener('click', () => {
-    bouncy = true;
-    cursor.dx = 8;
-    cursor.dy = 5;
+    if (!bouncy) {
+        startBouncy();
+    }
+    if (!continuePlay) {
+        resetDefaultGains();
+        continuePlay = true;
+        playBeat();
+    }
 })
 document.body.appendChild(bouncyButton);
+
+function startBouncy() {
+    cursor.dx = 8;
+    cursor.dy = 5;
+    bouncy = true;
+}
 
 function stopBouncy() {
     cursor.dx = 0;
